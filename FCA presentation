@@ -1,0 +1,266 @@
+---
+title: "The UK's Electricity Market"
+author: "Ria Hoondle"
+date: "2023-02-17"
+output:
+  html_document: default
+---
+# Who are *Ofgem* and what are their concerns?
+
+Ofgem is the office of gas and electricity markets and their role is to protect consumers by working to deliver a greener and fairer energy system.
+
+- There are 27.0 million households in the UK. Approximately 95% of all households receive mains electricity from a regulated electricity supplier and 5% are off-grid, generating electricity themselves.
+
+- By 2025, Ofgem have invisioned for an energy system to be on track for net-zero, where consumers recieve good value energy services as well as fair treatment from innovative, world class energy companies.
+
+- They are striving for: Rapid growth in the use of electric vehicles; an increased use of smart technology amongst consumers and an enhanced data-enabled energy sector.
+
+### Who are the *Big Six* energy suppliers?
+
+In the electricity market there are six large companies, known as the ‘Big Six’, but also a number of smaller providers. The ‘Big Six’ providers include: British Gas, EDF, E.ON, npower, Scottish Power and SSE.
+
+### What have Ofgem identified about electricity tariffs, customer satisfaction and market shares of different energy suppliers?
+
+The following report demonstrates a series of plots based on the data provided by *Ofgem the energy regulator*, as a method of demonstrating the latest trends in the energy industry, with particular focus on electricity, evaluation of this data is necessary for providing Ofgem with a detailed insight into their :
+  
+- Market share data\
+- Number of electricity switches between 2012-2018\
+- Data on the Average standard variable and cheapest tariff (categorised by company type)\
+- Customer Satisfaction\
+```{r, echo=FALSE,  warning=FALSE,results = FALSE,message=FALSE}
+```
+
+### How did market share percentages change from the years 2012-2018 amongst different energy suppliers?
+```{r setup, echo=FALSE,  warning=FALSE,results = FALSE,message=FALSE}
+library(dygraphs)
+library(xts)          # To make the convertion data-frame / xts format
+library(tidyverse)
+library(dplyr)    
+library(ggplot2)    
+library(scales) 
+library(tidyr)
+library(gcookbook)
+library(lubridate)
+
+electricity <- read.csv("Book8.csv",header = TRUE)
+a <- electricity[1:12,]
+a
+only_market_data <- read.csv("Book5.csv",header = TRUE)
+str(only_market_data)
+
+p <-data_long <-pivot_longer(only_market_data, cols=(2:15), names_to="Company", values_to='Values')
+p
+```
+```{r,echo=FALSE,  warning=FALSE,results = FALSE,message=FALSE, fig.width=6, fig.height=6}
+class(a$Month)
+library(lubridate)
+a$Month <- dmy(a$Month)
+```
+
+```{r,echo=FALSE,  warning=FALSE,results = FALSE,message=FALSE, fig.width=6, fig.height=6, fig.cap="Seasonal Market Shares from 2012-2017."}
+library(dplyr)    
+library(ggplot2)    
+library(scales) 
+library(tidyr)
+library(gcookbook)
+
+only_market_data <- read.csv("Book5.csv",header = TRUE)
+J <-subset(data_long, Time %in% c("Q1 2012", "Q1 2014", "Q1 2016", "Q1 2018"))
+J$Values =as.numeric(sub("%","",J$Values))/100
+J$Time[J$Time == 'Q1 2012'] <- '2012'
+J$Time[J$Time == 'Q1 2013'] <- '2013'
+J$Time[J$Time == 'Q1 2014'] <- '2014'
+J$Time[J$Time == 'Q1 2015'] <- '2015'
+J$Time[J$Time == 'Q1 2016'] <- '2016'
+J$Time[J$Time == 'Q1 2017'] <- '2017'
+J$Time[J$Time == 'Q1 2018'] <- '2018'
+
+ggplot(J, aes(fill=Company, y=Values, x=Time)) + 
+    geom_bar(position="stack", stat="identity") + labs(x="Year", y="Proportional Market Shares for that Year", title="Market Share Data")
+
+## Average standard variable and cheapest tariff (annual cost in £s) by company type (2012-2018)
+```
+Using this compound bar chart we are able to indentify that there is an increase in proportion of market shares for Utility Warehouse, OVO Energy and First Utility, and small decreases in the proportion of shares for British Gas, SSE and EDF energy.
+
+### How did the average tariff price provided by the big six energy suppliers compare with those provided by "other" energy suppliers between 2012-2018?
+
+###### *A negative proportion here indicates to us that "other" suppliers (referring to those aside from the big six) have higher tariff prices than those provided by the big six*
+
+```{r,echo=FALSE, message=FALSE}
+library(dygraphs)
+library(xts)          # To make the convertion data-frame / xts format
+library(tidyverse)
+library(lubridate)
+
+tarrif_change <- read.csv("Book14.csv",header = TRUE)
+tarrif_change$Date <- dmy(tarrif_change$Date)
+
+don2 <- xts(x = tarrif_change$Change, order.by = tarrif_change$Date)
+
+p2 <- dygraph(don2) %>%
+  dyOptions(labelsUTC = TRUE, fillGraph=TRUE, fillAlpha=0.1, drawGrid = FALSE, colors="#D8AE5A") %>%
+  dyRangeSelector() %>%
+  dyCrosshair(direction = "vertical") %>%
+  dyHighlight(highlightCircleSize = 5, highlightSeriesBackgroundAlpha = 0.2, hideOnMouseOut = FALSE)  %>%
+  dyRoller(rollPeriod = 1)
+
+p2
+
+```
+From the interactive plot above we can see that in earlier years the average tariff prices provided by "other" suppliers were higher than those provided by the big six energy suppliers - this is demonstrated by the negative proportional difference in the tariff prices, however in the last few years this trend has switched itself around, where we now see a growing increase in higher tariff prices from the big six energy suppliers compared with the other suppliers.
+
+### What other information has been identified in relation to tariff prices during the years 2012-2018?
+
+```{r,echo=FALSE, message=FALSE}
+tarrifs <- read.csv("Book10.csv",header = TRUE)
+tarrifs$Date[tarrifs$Date == '28/01/2012'] <- 'January'
+tarrifs$Date[tarrifs$Date == '28/02/2012'] <- 'February'
+tarrifs$Date[tarrifs$Date == '28/03/2012'] <- 'March'
+tarrifs$Date[tarrifs$Date == '28/04/2012'] <- 'April'
+tarrifs$Date[tarrifs$Date == '28/05/2012'] <- 'May'
+tarrifs$Date[tarrifs$Date == '28/06/2012'] <- 'June'
+tarrifs$Date[tarrifs$Date == '28/07/2012'] <- 'July'
+tarrifs$Date[tarrifs$Date == '28/08/2012'] <- 'August'
+tarrifs$Date[tarrifs$Date == '28/09/2012'] <- 'September'
+tarrifs$Date[tarrifs$Date == '28/10/2012'] <- 'October'
+tarrifs$Date[tarrifs$Date == '28/11/2012'] <- 'November'
+tarrifs$Date[tarrifs$Date == '28/12/2012'] <- 'December'
+k <-tarrifs[1:12,]
+library(CGPfunctions)
+library(dplyr)
+library(ggplot2)
+library(plotly)
+library(gapminder)
+
+p <- k %>%
+  ggplot( aes( Average.standard.variable.tariff..Other.suppliers., Cheapest.tariff..Six.large.suppliers., size =Cheapest.tariff..All.suppliers. , color=Date)) +
+  geom_point() +
+  theme_bw() +labs(x="Average tariff of Six Large Suppliers (£'s)", y="Average tariff of Other suppliers (£'s)", title="Tariff prices in 2012", size = "Cheapest Tariff from six large suppliers:", color="Month of 2012")
+
+ggplotly(p) 
+```
+The interactive Bubble chart here is showing us that the average Energy tariff from the six larger energy suppliers are higher in value than the average value from other suppliers - this is particularly demonstrated with the offset of the limits of both axis values, however this difference varies in a small range of 1-10% higher on average. The size of the bubble gives us a proportional indication of how much the cheapest tariff was from the six larger suppliers monthly. We can clearly see that the months of November, October, December, January and June faced more expensive tariffs in 2012 as indicated by their larger bubble radii. Hovering over the bubbles is useful for an indication of the exact values of these tariff.
+
+### Are tariff prices provided by suppliers consitent?
+```{r,echo=FALSE,warning=FALSE,message=FALSE}
+a <-mean(tarrifs[1:12,]$Average.standard.variable.tariff..Six.large.suppliers.)
+b <-mean(tarrifs[12:24,]$Average.standard.variable.tariff..Six.large.suppliers.)
+c <-mean(tarrifs[24:36,]$Average.standard.variable.tariff..Six.large.suppliers.)
+d <-mean(tarrifs[36:48,]$Average.standard.variable.tariff..Six.large.suppliers.)
+e <-mean(tarrifs[48:60,]$Average.standard.variable.tariff..Six.large.suppliers.)
+
+f<-mean(tarrifs[60:72,]$Average.standard.variable.tariff..Six.large.suppliers.)
+g <-mean(tarrifs[72:79,]$Average.standard.variable.tariff..Six.large.suppliers.)
+
+a1 <-sd(tarrifs[1:12,]$Average.standard.variable.tariff..Six.large.suppliers.)
+b1 <-sd(tarrifs[12:24,]$Average.standard.variable.tariff..Six.large.suppliers.)
+c2 <-sd(tarrifs[24:36,]$Average.standard.variable.tariff..Six.large.suppliers.)
+d2 <-sd(tarrifs[36:48,]$Average.standard.variable.tariff..Six.large.suppliers.)
+e2 <-sd(tarrifs[48:60,]$Average.standard.variable.tariff..Six.large.suppliers.)
+f2 <-sd(tarrifs[60:72,]$Average.standard.variable.tariff..Six.large.suppliers.)
+g2 <-sd(tarrifs[72:79,]$Average.standard.variable.tariff..Six.large.suppliers.)
+
+year <- c("2012","2013","2014","2015","2016","2017","2018")
+mean <- c(a,b,c,d,e,f,g)
+sd <- c(a1,b1,c2,d2,e2,f2,g2)
+my_data <- data.frame(year, mean, sd)
+
+p1<- ggplot(my_data, aes(x=year, y=mean, color=year, group=1)) + 
+  geom_line() +
+  geom_point()+
+  geom_errorbar(aes(ymin=mean-sd, ymax=mean+sd), width=.2,
+                 position=position_dodge(.9)) +labs(title="Average tariff prices between 2012-2018", subtitle="Chart demonstrates the average tariff prices from big six energy providers", y= "Mean tariff price (£'s)", x="Year") 
+print(p1)
+```
+
+
+*Error bars indicate consistency of tariff price that year*
+
+The line chart shows us that overall the tariff prices were increasing and the prices were most consistent over the 12 months of 2014.
+
+### To what extent did total electricity switches to different suppliers contribute to electricity switches overall?
+
+##### *A consumer is considered to make an electricity ‘switch’ when they either change tariff, or change supplier, or both.*
+
+```{r,echo=FALSE,warning=FALSE,message=FALSE}
+library(ggplot2)
+library(dplyr)
+library(plotly)
+library(hrbrthemes)
+library(dygraphs)
+library(lubridate)
+library(xts)
+library(tidyverse)
+
+satisfaction <- read.csv("Book11.csv",header = TRUE)
+satisfaction1 <-satisfaction[1:15,]
+satisfaction1$Quarter.Ending <- dmy(satisfaction1$Quarter.Ending)
+
+satisfaction1$Electricity =as.numeric(sub("%","",satisfaction1$Electricity))/100
+
+percentage <- read.csv("Book13.csv",header = TRUE)
+percentage$Date <- dmy(percentage$Date)
+
+don1 <- xts(x = percentage$Proportional_decrease, order.by = percentage$Date)
+p1 <- dygraph(don1) 
+p1 
+```
+The data provided by Ofgem was based upon *total electricity switches* and *total electricity switches to different suppliers* and the data is provided by month between the years 2012-2018. This graph shows us the proportional decrease between total electricity switches and switches as a result of changing supplier. We can generally see that as the years continue the total electricity switches to different suppliers is increasing dramatically.
+
+Overall we are able to see that electricity switches to different suppliers are becoming much more prevalent explaining why we see smaller values for the proportional difference between the two variables *total electricity switches (both switching tariff and/or supplier)* and *total electricity switches to different suppliers*.
+
+### How did trends in Market Shares change from the years 2012-2018?
+
+```{r,echo=FALSE,  warning=FALSE,results = FALSE,message=FALSE}
+library(CGPfunctions)
+library(dplyr) 
+library(ggplot2)
+J<-data_long
+J <-subset(data_long, Time %in% c("Q1 2012", "Q1 2013", "Q1 2014","Q1 2015", "Q1 2016", "Q1 2017", "Q1 2018"))
+J$Values =as.numeric(sub("%","",J$Values))/100
+J$Time[J$Time == 'Q1 2012'] <- '2012'
+J$Time[J$Time == 'Q1 2013'] <- '2013'
+J$Time[J$Time == 'Q1 2014'] <- '2014'
+J$Time[J$Time == 'Q1 2015'] <- '2015'
+J$Time[J$Time == 'Q1 2016'] <- '2016'
+J$Time[J$Time == 'Q1 2017'] <- '2017'
+J$Time[J$Time == 'Q1 2018'] <- '2018'
+
+df <- J%>%
+  filter(Time %in% c("2012", "2013", "2014","2015", "2016", "2017", "2018") &
+           Company %in% c("British.Gas", "EDF","E.ON", "npower","Scottish.Power", "First.Utility")) %>%
+  mutate(Time = factor(Time)) 
+df$Time <- as.factor(df$Time)
+
+newggslopegraph(df, Time, Values, Company) +
+  labs(title="Proportional representation of Market Shares", 
+       subtitle="Data of Quarter 1 from 2012-2018", 
+       caption="source: Ofgem")
+```
+
+This graph is complementing the compound bar chart seen at the beginning of the document as a method of providing the raw data more easily. Its demonstrating the data for quarter one only on a yearly basis.
+
+### Did customer Satisfaction improve between the years 2012-2017?
+
+This plot is demonstrating the pattern in the percentage of people who are very or fairly satisfied with their electricity supplier between the years 2012 and 2017. This is consumer research for Ofgem,
+
+```{r,echo=FALSE,  warning=FALSE,results = FALSE,message=FALSE}
+
+library(ggplot2)
+library(dplyr)
+library(hrbrthemes)
+
+# Most basic bubble plot
+sat <- ggplot(satisfaction1, aes(x=Quarter.Ending, y=Electricity)) +
+  geom_line( color="steelblue") + 
+  geom_point() +
+  xlab("") +
+  theme_ipsum() +
+  theme(axis.text.x=element_text(angle=60, hjust=1)) +
+  scale_x_date(limit=c(as.Date("2012-03-31"),as.Date("2015-09-30"))) +
+  ylim(0.45,0.55)+ labs(x="Year", y="Proportion of Customers who are fairly or very satisfied with their electricity suppliers", title="Customer Satisfaction levels towards energy suppliers", caption="Data supplied by Ofgem representing years 2012-2018")
+
+sat
+```
+
+The graph explains that customer satisfaction has remained fairly constant, it is not reaching higher than 55%, perhaps this is an area of improvement to investigate into.
